@@ -11,7 +11,7 @@
 
 > 在数据库服务器中，创建数据库
 
-* ```CREATE DATABASE database_name character set utf8;;```
+* ```CREATE DATABASE database_name character set utf8;```
 
 > 在数据库服务器中，创建数据表
 
@@ -824,5 +824,5 @@ mysql客户端导入：
 dos窗口导出整个库：
 ```mysqldump database_name>file_name -uroot -proot;```
 
-dos窗口导出指定个库：
+dos窗口导出指定表：
 ```mysqldump database_name table_name>file_name -uroot -proot;```
