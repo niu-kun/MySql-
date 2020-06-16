@@ -5,12 +5,13 @@
 ## 2. 数据库常用操作（增删改查）
 
 ![mysql修改密码](mysql修改密码.jpg)
+ ```expain```加Sql语句，可查看语句执行情况。
 
 ### 2.1 增
 
 > 在数据库服务器中，创建数据库
 
-* ```CREATE DATABASE database_name;```
+* ```CREATE DATABASE database_name character set utf8;;```
 
 > 在数据库服务器中，创建数据表
 
@@ -94,6 +95,10 @@ VALUES ('李四','男','2009-01-21');
 * ```SELECT VERSION();```
 * ```STATUS; 或者 /s;```
 
+> 结束一条语句
+
+```\c;```
+
 * 查看mysql默认字符集
 * ```SHOW VARIABLES LIKE "character%";```
 
@@ -117,6 +122,32 @@ VALUES ('李四','男','2009-01-21');
 * ![字符串（字符）类型](字符字符串类型.jpg)
 
 > [MySql的默认字符集设置](https://blog.csdn.net/gh_love/article/details/98097234)
+
+### 2.6 必会操作
+
+> 导入数据库
+
+* ```source file_path;```
+
+> 查看数据库编码方式（两种）
+
+* ```SHOW VARIABLES LIKE "character%";```  
+![数据库编码命令1](数据库编码命令1.jpg)
+
+* ```SHOW VARIABLES LIKE "collation%";```  
+![数据库编码命令2](数据库编码命令2.jpg)
+
+> 查看数据表的编码方式
+
+* ```show create table table_name;```
+
+character_set_client     **客户端** 编码方式；  
+character_set_connection **建立连接使用** 的编码;  
+character_set_results    **结果集** 的编码；  
+character_set_database   **数据库** 的编码；  
+character_set_server     **数据库服务器** 的编码；  
+
+只要保证以上五个采用的编码方式一样，就不会出现乱码问题。
 
 ## 3. MySql建表约束
 
@@ -260,11 +291,12 @@ DELETE FROM classes WHERE id=1;
 
 ```
 
-## 4. 数据库的三大设计范式
+## 4. 数据库的三大设计范式（解决数据冗余）
 
 ### 4.1 第一范式
 
-> 数据表中所有字段都是不可分割的原子值。
+> 任何一张表都应该有主键。
+> 数据表中每一个字段原子性都是不可再分。
 > 范式，设计的越详细，对于某些操作越好，但是不一定都是好处。
 
 ```Sql
@@ -295,8 +327,9 @@ INSERT INTO student3 VALUES(3,'王五','中国','四川省','成都市','成电'
 
 ### 4.2 第二范式
 
-> 必须满足第一范式的前提下，第二范式要求，除主键外的每一列必须完全依赖于主键。  
+> 必须满足第一范式的前提下，第二范式要求，所有非主键字段必须完全依赖于主键，不能产生分依赖。  
 > 如果不依赖于，只可能发生在联合主键的情况下。
+> **多对多？三张表，关系表两个外键。**
 
 ```Sql
 
@@ -325,13 +358,12 @@ CREATE TABLE customer(
     id int primary key,
     name varchar(20)
 );
-
-
 ```
 
 ### 4.3 第三范式
 
-> 必须先满足第二范式，除开主键列的其他列不能有传递依赖关系。
+> 必须先满足第二范式，所有非主键字段字段直接依赖主键。不能产生传递依赖关系。
+> **一对多？两张表，多的表加外键**
 
 ```Sql
 
@@ -355,8 +387,13 @@ CREATE TABLE customer(
     name int,
     phone varchar(15)
 );
-
 ```
+
+> **一对一怎么设计？**  
+ 两种方案：
+
+1. 主键共享（两张表主键一样）
+2. 外键唯一。（外键加unique）
 
 ## 5. MySql查询练习
 
@@ -668,7 +705,73 @@ DML（data manipulation language 数据操作语言）: insert delete update
    mysql默认隔离级别 ```repeatable-read;```。
    oracle默认隔离级别 ```read-committed;```。
 
-## 8. 常用名词
+## 8. 索引
+
+> 什么是索引？作用？
+
+  索引相当于书本的目录。查询一张表有两种方式。
+
+* 第一种：全表扫描。
+* 第二种：根据索引检索（**效率很高**）。  
+  原理是缩小了扫描的范围，快速定位。
+  表中数据经常被修改，就不要加索引，会增加索引成本。
+
+> 怎样创建索引对象？
+
+```create index index_name on table_name(column_name);```
+```drop index index_name on table_name```
+
+> 什么时候给字段加索引？（满足什么条件）
+
+* 数据量庞大。（根据客户的需求，根据线上的环境）
+* 该字段很少的DML操作。（因为字段进行修改操作，索引也需要维护）
+* 该字段经常出现在where子句中。（经常根据哪个字段查询）
+
+> 注意：主键和具有unique约束的字段会自动添加索引。
+        根据主键查询效率较高。尽量**根据主键检索**。
+> 索引底层采用的数据结构是：B + Tree （平衡树）
+> 索引实现原理？
+
+通过 B+Tree 缩小扫描范围，底层索引进行了排序，分区，索引会携带数据在表中的"物理地址"。
+最终通过索引检索到数据之后，获取到关联的物理地址，通过物理地址定位表中的数据，效率是最高的。  
+    ```select column_name from table_name where column_name ="";```  
+    通过索引转换为：  
+    ```select column_name from table_name where 物理地址 ="0x02";```
+
+> 索引分类？
+
+* 单一索引：给单个字段添加索引。
+* 复合索引：给多个字段联合起来添加 1 个索引。
+* 主键索引：主键上会自动添加索引。
+* 唯一索引：有unique约束的字段上会自动添加索引。
+
+> 索引失效？
+
+模糊查询的时候，**第一个通配符**使用的是%，索引失效。  
+```like '%sa%'```
+
+## 9. 视图（view）
+
+> 什么是视图？
+
+站在不同角度看数据。
+
+> 怎么创建视图？怎么删除视图？
+
+注意：只有DQL语句才能以视图的方式创建出来。
+```create view myView as select column_name from table_name```
+```drop view myView```
+
+> 对视图增删改查，会影响到原表数据。（通过视图影响原表数据，不是直接操作原表的）可以对视图进行CRUD操作。
+> 面向视图操作。
+
+```select * from view_name;```
+
+> 视图作用？
+
+可以隐藏表的实现细节。保密级别较高的系统，数据库只对外提供相关视图。
+
+## 10. 常用名词
 
 * SQL：（Structured Query Language）（结构化查询语言）。
   SQL语言共分为五大类：
@@ -687,23 +790,23 @@ DML（data manipulation language 数据操作语言）: insert delete update
 * WHERE <查询条件>
 
 * **DML**:（Data Manipulation Language）（数据操纵语言）  
-  这3条命令是用来对数据库里的数据进行操作的语言。
-* 插入：INSERT
-* 更新：UPDATE
-* 删除：DELETE
+  这3条命令是用来对数据库里的**数据**进行操作的语言。
+* 插入：```INSERT```
+* 更新：```UPDATE```
+* 删除：```DELETE```
 
 * **DDL**:（Data Definition Language）（数据定义语言）
   * ```CREATE```  建立表
   * ```ALTER```    修改表中字段（增加列，更改列，删除列）
   * ```DROP```      删除表（删除表结构和记录）
   * ```TRUNCATE```   删除表（删除记录，保留表结构）
-  * DDL主要是用在定义或改变表（TABLE）的结构，数据类型，表之间的链接和约束等初始化工作上，他们大多在建立表时使用。
+  * DDL主要是用在定义或改变**表结构**，数据类型，表之间的链接和约束等初始化工作上，他们大多在建立表时使用。
   * DDL操作是隐性提交的！不能rollback。
 
 * **DCL**:（Data Control Language）（数据控制语言）
   * 设置或更改数据库用户或角色权限
   * ```grant```   授权
-  * ```deny```
+  * ```deny```    拒绝授权
   * ```revoke```  收回已经授予的权限
   * 在默认状态下，只有sysadmin,dbcreator,db_owner或db_securityadmin等人员才有权力执行DCL。
 
@@ -712,3 +815,14 @@ DML（data manipulation language 数据操作语言）: insert delete update
   * ```ROLLBACK```     回滚。
   * ```SAVEPOINT```       在事务中设置保存点，可以回滚到此处。
   * ```SET TRANSACTION```    改变事务选项。
+
+> 导入导出数据？
+
+mysql客户端导入：
+```source file_path;```
+
+dos窗口导出整个库：
+```mysqldump database_name>file_name -uroot -proot;```
+
+dos窗口导出指定个库：
+```mysqldump database_name table_name>file_name -uroot -proot;```
