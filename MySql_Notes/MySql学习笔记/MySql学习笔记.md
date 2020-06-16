@@ -4,6 +4,8 @@
 
 ## 2. 数据库常用操作（增删改查）
 
+![mysql修改密码](mysql修改密码.jpg)
+
 ### 2.1 增
 
 > 在数据库服务器中，创建数据库
@@ -551,13 +553,162 @@ union
 select * from person right join card on person.cardId=card.id;
 ```
 
-## 7. MySql 事务
+## 7. MySql 事务（只有 DML 语句才支持事务）
 
-* MySql 中，事务是一个不可分割的工作单元。事务能够保证一个业务的完整性。  
+定义：一个事务是一个完整的业务逻辑单元，不可再分。一个事务可以是一条SQL语句，一组SQL语句或整个程序。  
+DML（data manipulation language 数据操作语言）: insert delete update
+
+### 7.1 事务的开启与关闭
+
+* MySql 中，事务是一个不可分割的业务逻辑单元，不可再分。 事务能够保证一个业务的完整性。  
 * 设置 MySql 自动提交为 false，并查看是否设置成功。  
-  ```set autocommit=0;```  
-  ```select @@autocommit;```  
+  ```set autoCommit=0;```  
+  ```select @@autoCommit;```  
 * 设置成功后可以用 **rollback** 实现回滚。  
   ```rollback;```
-* 如果确认提交，则输入 **commit** 即可。
+* 如果确认提交，则输入 **commit** 即可。  
   ```commit;```
+
+* 开启事务。可以在不设置 autoCommit=0 的情况下用 rollback 实现回滚。  
+  ```begin;```  
+  或者  
+  ```start transaction```  
+  然后回滚  
+  ```rollback;```  
+  **如果输入 commit，当前事务就结束了。**则回滚无效。
+
+### 7.1 事务的四大特征 ACID
+
+* A 原子性：事务是最小的工作单元，不可再分。
+* C 一致性：事务要必须保证多条DML语句同时成功或同时失败。
+* I 隔离性：事务A和事务B之间具有隔离性。
+* **设置完隔离级别一定要重启数据库，否则另外的控制台虽然能查询到隔离级别的更改，但是实际隔离级别并未改变**  
+  **Oracle一般二档起步，MySql一般三挡起步**
+* D 持久性： 持久性说的是最终数据必须持久化到硬盘文件中，事务才算成功的结束，就不可以返回。
+  
+> 事务开启：
+
+1. 修改默认提交 ```set autoCommit=0;```
+2. ```begin;```
+3. ```start transaction;```  
+
+（开启事务机制：执行insert、update、delete等语句，这个执行成功后，把这个执行记录到数据库的操作历史当中，并不会向文件中保存一条数据，不会真正的修改硬盘上的数据【在缓存中】。直到提交或回滚事务【 事务结束】）
+
+> 事务手动提交：
+
+```commit;```
+
+> 事务手动回滚：
+
+```rollback;```
+
+> 事务的隔离性：
+
+1. ```read uncommitted;```
+   **读未提交  （会出现脏读）**
+
+    * 数据根本没在硬盘文件，在缓存，表示读到了脏的数据。
+    * 如果有事务a，和事务b。a事务对数据进行操作，事务没被提交，但是b可以看见a操作的结果。
+
+   > 查看数据库的隔离级别。
+
+     * 系统级别的
+     * ```select @@global.transaction_isolation;```  
+
+     * 会话级别的
+     * ```select @@transaction_isolation;```
+
+   > 修改隔离级别？
+
+     * MySql 默认隔离级别 ```repeatable-read;```
+     * ![mysql默认隔离级别](mysql默认隔离级别.jpg)
+
+     * ```set global transaction isolation level read uncommitted;```
+
+2. ```read committed;```
+   **读提交 （会出现不可重复读现象）**
+
+    * 解决了脏读现象。
+    * 事务A没有结束，事务B变动了数据，造成了事务A再读取数据时会发生变化前后数据不一致。
+    * 设置数据库的隔离级别为 ```read committed;```
+    * ```set global transaction isolation level read committed;```
+
+3. ```repeatable read;```
+   **可重复读 （会出现幻读现象）**
+
+    * 解决了不可重复读问题。
+    * 事务A开启了，不管事务B提没提交，都读取不到。
+    * 设置数据库的隔离级别为 ```repeatable read;```
+    * 事务a和事务b 同时给hi操作一张表，事务a提交的数据，也不能被事务b读到，就造成了幻读。
+
+4. ```serializable;```
+   **串行化 （会出现 卡住 现象，性能特差）**
+
+    * 设置数据库的隔离级别为 ```serializable;```
+    * 当一个表被一个事务操作时，其他事务里面的操作，是不可以进行的。
+    * 会进入排队状态（串行化），知道一边事务结束，操作才可以进行。
+
+5. 读取总结
+
+* 事务A、B同时开启
+  | 隔离级别 | 事务A开启 | 事务B开启 | 无事务 |
+   | :----: | :----: | :----: | :----: | :----:
+   | read-uncommitted | 插入数据未提交 | √ | √ |
+   |  | 插入数据 已提交 | √ | √ |
+   | read-committed | 插入数据 未提交 | × | × |
+   |  | 插入数据 已提交 | √ | √ |
+   | repeatable-read | 插入数据 未提交 | × | × |
+   |  | 插入数据 已提交 | × | √ |
+   | serializable | 插入数据未提交 | 等待 | × |
+   |  | 插入数据 已提交 | √ | √ |
+
+1. 性能总结
+   read uncommitted > read committed > repeatable read > serializable;
+   隔离级别相反。即性能越好，隔离级别越差。
+   mysql默认隔离级别 ```repeatable-read;```。
+   oracle默认隔离级别 ```read-committed;```。
+
+## 8. 常用名词
+
+* SQL：（Structured Query Language）（结构化查询语言）。
+  SQL语言共分为五大类：
+  ![SQL五大语言分类](SQL五大语言分类.jpg)
+
+  * 数据查询语言DQL。
+  * 数据操纵语言DML。
+  * 数据定义语言DDL。
+  * 数据控制语言DCL。
+  * 事务控制语言TCL
+
+* **DQL**:（Data Query Language）（数据查询语言）  
+  数据查询语言DQL基本结构是由SELECT子句，FROM子句，WHERE子句组成的查询块：
+* SELECT <字段名表>
+* FROM <表或视图名>
+* WHERE <查询条件>
+
+* **DML**:（Data Manipulation Language）（数据操纵语言）  
+  这3条命令是用来对数据库里的数据进行操作的语言。
+* 插入：INSERT
+* 更新：UPDATE
+* 删除：DELETE
+
+* **DDL**:（Data Definition Language）（数据定义语言）
+  * ```CREATE```  建立表
+  * ```ALTER```    修改表中字段（增加列，更改列，删除列）
+  * ```DROP```      删除表（删除表结构和记录）
+  * ```TRUNCATE```   删除表（删除记录，保留表结构）
+  * DDL主要是用在定义或改变表（TABLE）的结构，数据类型，表之间的链接和约束等初始化工作上，他们大多在建立表时使用。
+  * DDL操作是隐性提交的！不能rollback。
+
+* **DCL**:（Data Control Language）（数据控制语言）
+  * 设置或更改数据库用户或角色权限
+  * ```grant```   授权
+  * ```deny```
+  * ```revoke```  收回已经授予的权限
+  * 在默认状态下，只有sysadmin,dbcreator,db_owner或db_securityadmin等人员才有权力执行DCL。
+
+* **TCL**：（Transaction Control Language）（事务控制语言）
+  * ```COMMIT```      提交。
+  * ```ROLLBACK```     回滚。
+  * ```SAVEPOINT```       在事务中设置保存点，可以回滚到此处。
+  * ```SET TRANSACTION```    改变事务选项。
