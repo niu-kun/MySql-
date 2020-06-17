@@ -5,20 +5,20 @@
 ## 2. 数据库常用操作（增删改查）
 
 ![mysql修改密码](mysql修改密码.jpg)
- ```expain```加Sql语句，可查看语句执行情况。
+ ```explain```加Sql语句，可查看语句执行情况。
 
 ### 2.1 增
 
 > 在数据库服务器中，创建数据库
 
-* ```CREATE DATABASE database_name character set utf8;```
+* ```CREATE DATABASE database_name character set utf8;;```
 
 > 在数据库服务器中，创建数据表
 
 ```Sql
 USE student;
 CREATE TABLE table_name(
-    name VARCHAR(20),
+    name varChar(20),
     sex CHAR(1),
     birth DATE);
 ```
@@ -159,19 +159,19 @@ character_set_server     **数据库服务器** 的编码；
 ```Sql
 CREATE TABLE user(
     id int PRIMARY KEY,
-    name varchar(20)
+    name varChar(20)
 );
 
 CREATE TABLE user2(
     id int,
-    name varchar(20),
-    password varchar(20),
+    name varChar(20),
+    password varChar(20),
     PRIMARY KEY(id,name)
 );
 
 CREATE TABLE user4(
     id int,
-    name varchar(20)
+    name varChar(20)
 );
 /* 添加主键 */
 ALTER TABLE user4 add PRIMARY KEY(id,name);
@@ -190,7 +190,7 @@ ALTER TABLE user4 MODIFY id int PRIMARY KEY;
 ```Sql
 CREATE table user3(
     id int PRIMARY AUTO_INCREMENT,
-    name varchar(20)
+    name varChar(20)
 );
 
 INSERT INTO user3 VALUES(NULL,'小米');
@@ -209,18 +209,18 @@ INSERT INTO user3 (name)VALUES('玉米');
 ```Sql
 create table user5(
     id int,
-    name varchar(20)
+    name varChar(20)
 );
 
 /* 添加唯一约束 三种方法*/
 ALTER TABLE user5 ADD UNIQUE(name);
 
-ALTER TABLE user5 MODIFY name varchar(20) unique;
+ALTER TABLE user5 MODIFY name varChar(20) unique;
 
 
 CREATE TABLE user6(
     id int,
-    name varchar(20),
+    name varChar(20),
     unique(id)
 );
 
@@ -234,7 +234,7 @@ ALTER TABLE user6 drop INDEX id;
 ```Sql
 CREATE TABLE user7(
     id int,
-    name varchar(20) NOT NULL
+    name varChar(20) NOT NULL
 );
 ```
 
@@ -244,7 +244,7 @@ CREATE TABLE user7(
 ```Sql
 CREATE TABLE user8(
     id int,
-    bane varchar(20),
+    bane varChar(20),
     age int DEFAULT 18
 );
 
@@ -260,13 +260,13 @@ CREATE TABLE user8(
 /* 班级表 */
 CREATE TABLE classes(
     id int PRIMARY KEY,
-    name VARCHAR(20)
+    name varChar(20)
 );
 
 /* 学生表 */
 CREATE TABLE students(
     id int PRIMARY KEY,
-    name VARCHAR(20),
+    name varChar(20),
     class_id int,
     foreign key(class_id) references classes(id)
 );
@@ -304,8 +304,8 @@ DELETE FROM classes WHERE id=1;
 /* 字段直还可以继续拆分，不满足第一范式 */
 CREATE TABLE student2(
     id INT PRIMARY KEY,
-    name VARCHAR(20),
-    address VARCHAR(30)
+    name varChar(20),
+    address varChar(30)
 );
 INSERT INTO student2 VALUES(1,'张三','中国四川省成都市成电');
 INSERT INTO student2 VALUES(2,'张四','中国四川省成都市成电');
@@ -314,11 +314,11 @@ INSERT INTO student2 VALUES(3,'张五','中国四川省成都市成电');
 /* 满足第一范式例子 */
 CREATE TABLE student3(
     id INT PRIMARY KEY,
-    name VARCHAR(20),
-    country VARCHAR(30),
-    province VARCHAR(30),
-    city VARCHAR(30),
-    details VARCHAR(30)
+    name varChar(20),
+    country varChar(30),
+    province varChar(30),
+    city varChar(30),
+    details varChar(30)
 );
 INSERT INTO student3 VALUES(1,'张三','中国','四川省','成都市','成电');
 INSERT INTO student3 VALUES(2,'李四','中国','四川省','成都市','成电');
@@ -337,8 +337,8 @@ INSERT INTO student3 VALUES(3,'王五','中国','四川省','成都市','成电'
 CREATE TABLE myOrder(
     product_id int,
     customer_id int,
-    product_name varchar(20),
-    customer_name varchar(20),
+    product_name varChar(20),
+    customer_name varChar(20),
     primary key(product, customer_id)
 );
 
@@ -351,12 +351,12 @@ CREATE TABLE myOrder(
 
 CREATE TABLE product(
     id int primary key,
-    name varchar(20)
+    name varChar(20)
 );
 
 CREATE TABLE customer(
     id int primary key,
-    name varchar(20)
+    name varChar(20)
 );
 ```
 
@@ -372,7 +372,7 @@ CREATE TABLE myOrder(
     order_id int primary key,
     product_name int,
     customer_id int,
-    customer_phone varchar(15)
+    customer_phone varChar(15)
 );
 
 /* 满足第三范式 */
@@ -385,7 +385,7 @@ CREATE TABLE myOrder(
 CREATE TABLE customer(
     id int primary key,
     name int,
-    phone varchar(15)
+    phone varChar(15)
 );
 ```
 
@@ -403,35 +403,35 @@ CREATE TABLE customer(
 
     /* 学生表 */
     CREATE TABLE student(
-        SNo varchar(20) primary key,
-        SName varchar(20) not null,
+        SNo varChar(20) primary key,
+        SName varChar(20) not null,
         SSex char(1) not null,
         SBirth datetime,
-        SClass varchar(15)
+        SClass varChar(15)
     );
 
      /* 教师表 */
     CREATE TABLE teacher(
-        TNo varchar(20) primary key,
-        TName varchar(20) not null,
+        TNo varChar(20) primary key,
+        TName varChar(20) not null,
         TSex char(1) not null,
         TBirth datetime,
-        TProf  varchar(20) not null,
-        TDepart varchar(15) not null
+        TProf  varChar(20) not null,
+        TDepart varChar(15) not null
     );
 
     /* 课程表 */
     CREATE TABLE course(
-        CNo varchar(20) primary key,
-        CName varchar(20) not null,
-        CTNo varchar(20) not null,
+        CNo varChar(20) primary key,
+        CName varChar(20) not null,
+        CTNo varChar(20) not null,
         foreign key(CTNo) references teacher(TNo)
     );
 
     /* 成绩表 */
     CREATE TABLE score(
-        SSNo varchar(20) primary key,
-        SCNo varchar(20) not null,
+        SSNo varChar(20) primary key,
+        SCNo varChar(20) not null,
         SScore decimal not null,
         foreign key(SSNo) references student(SNo),
         foreign key(SCNo) references course(CNo)
@@ -555,13 +555,13 @@ select SCNo,avg(SSCore) from score where SSNo in(select SNo from student where S
 ```Sql
 CREATE TABLE person(
     id int,
-    name varchar(20),
+    name varChar(20),
     cardId int
 );
 
 CREATE TABLE card(
     id int,
-    name varchar(20)
+    name varChar(20)
 );
 
 insert into person values(1,'张一',1001);
@@ -599,20 +599,20 @@ DML（data manipulation language 数据操作语言）: insert delete update
 
 * MySql 中，事务是一个不可分割的业务逻辑单元，不可再分。 事务能够保证一个业务的完整性。  
 * 设置 MySql 自动提交为 false，并查看是否设置成功。  
-  ```set autoCommit=0;```  
-  ```select @@autoCommit;```  
+```set autoCommit=0;```  
+```select @@autoCommit;```  
 * 设置成功后可以用 **rollback** 实现回滚。  
-  ```rollback;```
+```rollback;```
 * 如果确认提交，则输入 **commit** 即可。  
-  ```commit;```
+```commit;```
 
 * 开启事务。可以在不设置 autoCommit=0 的情况下用 rollback 实现回滚。  
-  ```begin;```  
-  或者  
-  ```start transaction```  
-  然后回滚  
-  ```rollback;```  
-  **如果输入 commit，当前事务就结束了。**则回滚无效。
+```begin;```  
+或者  
+```start transaction```  
+然后回滚  
+```rollback;```  
+**如果输入 commit，当前事务就结束了。**则回滚无效。
 
 ### 7.1 事务的四大特征 ACID
 
@@ -642,27 +642,27 @@ DML（data manipulation language 数据操作语言）: insert delete update
 > 事务的隔离性：
 
 1. ```read uncommitted;```
-   **读未提交  （会出现脏读）**
+**读未提交  （会出现脏读）**
 
-    * 数据根本没在硬盘文件，在缓存，表示读到了脏的数据。
-    * 如果有事务a，和事务b。a事务对数据进行操作，事务没被提交，但是b可以看见a操作的结果。
+* 数据根本没在硬盘文件，在缓存，表示读到了脏的数据。
+* 如果有事务a，和事务b。a事务对数据进行操作，事务没被提交，但是b可以看见a操作的结果。
 
-   > 查看数据库的隔离级别。
+> 查看数据库的隔离级别。
 
-     * 系统级别的
-     * ```select @@global.transaction_isolation;```  
+* 系统级别的
+* ```select @@global.transaction_isolation;```  
 
-     * 会话级别的
-     * ```select @@transaction_isolation;```
+* 会话级别的
+* ```select @@transaction_isolation;```
 
    > 修改隔离级别？
 
-     * MySql 默认隔离级别 ```repeatable-read;```
-     * ![mysql默认隔离级别](mysql默认隔离级别.jpg)
+* MySql 默认隔离级别 ```repeatable-read;```
+* ![mysql默认隔离级别](mysql默认隔离级别.jpg)
 
-     * ```set global transaction isolation level read uncommitted;```
+* ```set global transaction isolation level read uncommitted;```
 
-2. ```read committed;```
+1. ```read committed;```
    **读提交 （会出现不可重复读现象）**
 
     * 解决了脏读现象。
@@ -670,7 +670,7 @@ DML（data manipulation language 数据操作语言）: insert delete update
     * 设置数据库的隔离级别为 ```read committed;```
     * ```set global transaction isolation level read committed;```
 
-3. ```repeatable read;```
+2. ```repeatable read;```
    **可重复读 （会出现幻读现象）**
 
     * 解决了不可重复读问题。
@@ -678,14 +678,14 @@ DML（data manipulation language 数据操作语言）: insert delete update
     * 设置数据库的隔离级别为 ```repeatable read;```
     * 事务a和事务b 同时给hi操作一张表，事务a提交的数据，也不能被事务b读到，就造成了幻读。
 
-4. ```serializable;```
+3. ```serializable;```
    **串行化 （会出现 卡住 现象，性能特差）**
 
     * 设置数据库的隔离级别为 ```serializable;```
     * 当一个表被一个事务操作时，其他事务里面的操作，是不可以进行的。
     * 会进入排队状态（串行化），知道一边事务结束，操作才可以进行。
 
-5. 读取总结
+4. 读取总结
 
 * 事务A、B同时开启
   | 隔离级别 | 事务A开启 | 事务B开启 | 无事务 |
@@ -808,7 +808,7 @@ DML（data manipulation language 数据操作语言）: insert delete update
   * ```grant```   授权
   * ```deny```    拒绝授权
   * ```revoke```  收回已经授予的权限
-  * 在默认状态下，只有sysadmin,dbcreator,db_owner或db_securityadmin等人员才有权力执行DCL。
+  * 在默认状态下，只有sysadmin,dbCreator,db_owner或db_securityAdmin等人员才有权力执行DCL。
 
 * **TCL**：（Transaction Control Language）（事务控制语言）
   * ```COMMIT```      提交。
@@ -822,7 +822,7 @@ mysql客户端导入：
 ```source file_path;```
 
 dos窗口导出整个库：
-```mysqldump database_name>file_name -uroot -proot;```
+```mySqlDump database_name>file_name -uroot -proot;```
 
-dos窗口导出指定表：
-```mysqldump database_name table_name>file_name -uroot -proot;```
+dos窗口导出指定个库：
+```mySqlDump database_name table_name>file_name -uroot -proot;```
